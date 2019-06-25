@@ -1,0 +1,14 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+config SERVICES_IOTPF_LIB
+	bool "Services IOTPF lib"
+	default n
+	---help---
+		Enable the IOTPF library
+
+if SERVICES_IOTPF_LIB
+
+endif # SERVICES_IOTPF_LIB
+
