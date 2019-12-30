@@ -68,35 +68,11 @@ typedef cis_rid_t    cis_actcount_t;
 typedef cis_rid_t    cis_rescount_t;
 typedef int32_t      cis_time_t;  //normally in second unit
 
-/*
- *
- */
-#define     CIS_TWO_MCU                         1
-#define     CIS_ONE_MCU                         0
-
-#ifndef     CIS_TWO_MCU
-#define     CIS_TWO_MCU                   0
-#endif
-
-#ifndef     CIS_ONE_MCU
-#define     CIS_ONE_MCU                   0
-#endif
-
-
-
-
-#if !(CIS_TWO_MCU || CIS_ONE_MCU)
-#error "You must select one scheme from ONE MCU scheme and two MCU scheme"
-#elif (CIS_TWO_MCU && CIS_ONE_MCU)
-#error "You can only select one scheme from ONE MCU scheme and two MCU scheme"
-#endif
-
 #define     CIS_ENABLE_LOG                      1
 #define     CIS_ENABLE_PSK                      1
 #define     CIS_ENABLE_DTLS                     1
 #define     CIS_DTLS_LOG                        1
 #define     CIS_LITTLE_ENDIAN                   1
-#define     CIS_OPERATOR_CTCC                   1
 
 #if 0
 #define     CIS_ENABLE_DM                       1
@@ -113,10 +89,6 @@ typedef int32_t      cis_time_t;  //normally in second unit
 //#define     CIS_DTLS_LOG                        1
 
 //#define     CIS_ENABLE_MEMORYTRACE              1
-#endif
-
-#ifndef     CIS_OPERATOR_CTCC
-#define     CIS_OPERATOR_CTCC               0
 #endif
 
 #ifndef     CIS_VERSION_MAJOR

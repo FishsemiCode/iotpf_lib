@@ -40,6 +40,7 @@
 #define _CIS_API_H_
 #include <time.h>
 #include "cis_def.h"
+#include "cis_list.h"
 
 
 #ifdef __cplusplus
@@ -56,7 +57,11 @@ typedef struct st_cis_observe_attr  cis_observe_attr_t;
 typedef struct st_cis_inst_bitmap   cis_inst_bitmap_t;
 typedef struct st_cis_res_count		cis_res_count_t;
 typedef struct st_cis_callback      cis_callback_t;
+typedef struct st_cis_callback_ctcc  cis_callback_ctcc_t;
+
 typedef struct st_uri               cis_uri_t;
+typedef struct st_object            st_object_t;
+
 
 typedef cis_coapret_t (*cis_read_callback_t)(void *context, cis_uri_t *uri, cis_mid_t mid);
 typedef cis_coapret_t (*cis_write_callback_t)(void *context, cis_uri_t *uri, const cis_data_t *value, cis_attrcount_t attrcount, cis_mid_t mid);
@@ -65,6 +70,9 @@ typedef cis_coapret_t (*cis_observe_callback_t)(void *context, cis_uri_t *uri, b
 typedef cis_coapret_t (*cis_discover_callback_t)(void *context, cis_uri_t *uri, cis_mid_t mid);
 typedef cis_coapret_t (*cis_set_params_callback_t)(void *context, cis_uri_t *uri, cis_observe_attr_t parameters, cis_mid_t mid);
 typedef void (*cis_event_callback_t)(void *context, cis_evt_t id, void *param);
+
+typedef cis_coapret_t (*cis_write_raw_callback_t)(void *context, const uint8_t *data, uint32_t length);
+
 
 #define LIFETIME_INVALID      ((uint32_t)0xFFFFFFFF)
 #define MESSAGEID_INVALID     ((uint32_t)0x00)
@@ -106,8 +114,25 @@ struct st_uri
   cis_rid_t resourceId;
 };
 
+struct st_object
+{
+  struct st_object *next;               // for internal use only.
+  cis_listid_t objID;
+  cis_instcount_t instBitmapBytes;
+  cis_instcount_t instBitmapCount;
+  uint8_t *instBitmapPtr;
+  cis_instcount_t instValidCount;
+
+  cis_attrcount_t attributeCount;
+  cis_actcount_t actionCount;
+  void *userData;
+};
+
+
 cis_ret_t cis_uri_make(cis_oid_t oid, cis_iid_t iid, cis_rid_t rid, cis_uri_t *uri);
 cis_ret_t cis_uri_update(cis_uri_t *uri);
+void cisapi_wakeup_pump(void);
+uint32_t cis_pump_initialize(void);
 
 
 typedef enum
@@ -126,10 +151,22 @@ struct st_cis_callback
   cis_write_callback_t onWrite;
   cis_exec_callback_t onExec;
   cis_observe_callback_t onObserve;
+  cis_event_callback_t onEvent;
   cis_discover_callback_t onDiscover;
   cis_set_params_callback_t onSetParams;
-  cis_event_callback_t onEvent;
 };
+
+struct st_cis_callback_ctcc
+{
+  cis_read_callback_t onRead;
+  cis_write_callback_t onWrite;
+  cis_exec_callback_t onExec;
+  cis_observe_callback_t onObserve;
+  cis_event_callback_t onEvent;
+  cis_write_raw_callback_t onWriteRaw;
+};
+
+
 
 struct st_cis_data
 {
@@ -201,6 +238,24 @@ typedef enum
   cis_res_result_notAcceptable,
 }cis_res_result_t;
 
+typedef enum
+{
+  cis_iotpf_mode_at,
+  cis_iotpf_mode_api,
+}cis_iotpf_mode_t;
+
+typedef enum
+{
+  cis_iotpf_operator_ctcc,
+  cis_iotpf_operator_cmcc,
+}cis_iotpf_operator_t;
+
+
+typedef struct
+{
+  cis_iotpf_mode_t iotpf_mode;
+  cis_iotpf_operator_t iotpf_operator;
+} cis_iotpf_configs;
 
 cis_ret_t cis_version(cis_version_t *version);
 
@@ -213,29 +268,51 @@ cis_ret_t cis_init_ota(void **context, void *configPtr, uint16_t configLen, cis_
 char *cis_get_version(char *ver);
 #endif
 
-cis_ret_t cis_init(void **context, void *configPtr, uint16_t configLen, void *DMconf);
+cis_ret_t cis_init(void **context, void *configPtr, uint16_t configLen);
 cis_ret_t cis_deinit(void **context);
 
 cis_ret_t cis_register(void *context, cis_time_t lifetime, const cis_callback_t *cb);
+cis_ret_t cis_register_ctcc(void *context, cis_time_t lifetime, const cis_callback_ctcc_t *cb);
+
 cis_ret_t cis_unregister(void *context);
 
 cis_ret_t cis_addobject(void *context, cis_oid_t objectid, const cis_inst_bitmap_t *bitmap, const cis_res_count_t *rescount);
 cis_ret_t cis_delobject(void *context, cis_oid_t objectid);
+st_object_t *cis_findObject(void *context, cis_oid_t objectid);
+
 
 uint32_t cis_pump(void *context, time_t *timeoutP);
 cis_ret_t cis_update_reg(void *context, cis_time_t lifetime, bool withObjects);
 
 cis_ret_t cis_response(void *context, const cis_uri_t *uri, const cis_data_t *value, cis_mid_t mid, cis_coapret_t result);
 cis_ret_t cis_notify(void *context, const cis_uri_t *uri, const cis_data_t *value, cis_mid_t mid, cis_coapret_t result, bool needAck);
+cis_ret_t cis_notify_raw(void *context, uint8_t *data, uint32_t length);
 cis_ret_t cis_discover_response(void *context, cis_mid_t msgId, cis_res_result_t result, char *valueStr);
 
 void ciscom_destory(void);
-int ciscom_initialize(void);
+int ciscom_initialize(cis_iotpf_configs *pIotpf_configs);
 
-#if CIS_TWO_MCU
+int cis_get_iotpf_mode(void);
+int cis_get_iotpf_operator(void);
+
+
+
 int cisat_readloop(int fd);
 int cisat_initialize(void);
-#endif
+
+int cisapi_initialize(void);
+
+
+
+void cis_data_encode_string(const char *string, cis_data_t *dataP);
+void cis_data_encode_opaque(uint8_t *buffer, size_t length, cis_data_t *dataP);
+void cis_data_encode_nstring(const char *string, size_t length, cis_data_t *dataP);
+void cis_data_encode_int(int64_t value, cis_data_t *dataP);
+int cis_data_decode_int(const cis_data_t *dataP, int64_t *valueP);
+void cis_data_encode_float(double value, cis_data_t *dataP);
+int cis_data_decode_float(const cis_data_t *dataP, double *valueP);
+void cis_data_encode_bool(bool value, cis_data_t *dataP);
+int cis_data_decode_bool(const cis_data_t *dataP, bool *valueP);
 
 
 #if CIS_ENABLE_UPDATE_MCU
