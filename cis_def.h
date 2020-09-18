@@ -120,10 +120,9 @@ typedef int32_t      cis_time_t;  //normally in second unit
 #endif
 
 
-#ifndef     CIS_ENABLE_UPDATE
+#ifndef     CONFIG_SERVICES_IOTPF_OTA_UPDATE
 #define     CIS_ENABLE_UPDATE                    0
 #else
-#undef      CIS_ENABLE_UPDATE
 #define     CIS_ENABLE_UPDATE                    1
 #endif
 
@@ -154,10 +153,10 @@ typedef int32_t      cis_time_t;  //normally in second unit
 
 
 #ifndef		CIS_ENABLE_CMIOT_OTA
-#define		CIS_ENABLE_CMIOT_OTA				0
+#define		CIS_ENABLE_CMIOT_OTA              0
 #else
 #undef		CIS_ENABLE_CMIOT_OTA
-#define		CIS_ENABLE_CMIOT_OTA				1
+#define		CIS_ENABLE_CMIOT_OTA              1
 #endif
 
 #ifndef     CIS_ENABLE_AUTH

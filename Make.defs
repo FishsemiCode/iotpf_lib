@@ -33,5 +33,5 @@
 ############################################################################
 
 ifeq ($(CONFIG_SERVICES_IOTPF_LIB),y)
-CONFIGURED_APPS += external/services/iotpf_lib
+CONFIGURED_APPS += $(APPDIR)/external/services/iotpf_lib
 endif

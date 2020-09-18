@@ -45,25 +45,23 @@
 #define LOG_EXOUTPUT_FILE_MSK    (0x02)
 #define LOG_EXOUTPUT_LINE_MSK    (0x04)
 
-#define LOG_LEVEL_ERROR		(0x00)
-#define LOG_LEVEL_WARNING	(0x01)
-#define LOG_LEVEL_INFO		(0x02)
-#define	LOG_LEVEL_DEBUG		(0x03)
+#define LOG_LEVEL_ERROR          (0x00)
+#define LOG_LEVEL_WARNING        (0x01)
+#define LOG_LEVEL_INFO           (0x02)
+#define LOG_LEVEL_DEBUG          (0x03)
 
 
-#define	LOG_TEXT_SIZE_MIN					(64)
-#define	LOG_TEXT_SIZE_MAX					(2048)
-#define LOG_PREFIX_SIZE_MAX				    (32)
-//////////////////////////////////////////////////////////////////////////
-#define LOG_DUMP_ENABLED                    0
-#define LOG_OUTPUT_EXTINFO					0
+#define LOG_TEXT_SIZE_MIN        (64)
+#define LOG_TEXT_SIZE_MAX        (2048)
+#define LOG_PREFIX_SIZE_MAX      (32)
 
-//////////////////////////////////////////////////////////////////////////
+#define LOG_DUMP_ENABLED         0
+#define LOG_OUTPUT_EXTINFO       0
+
 #ifndef LOG_TAG
-#define	LOG_TAG				"cis"
+#define LOG_TAG                  "cis"
 #endif
 
-//////////////////////////////////////////////////////////////////////////
 #define STRINGIFY(x)  #x
 #define STRCONCAT(x, y)  #x#y
 

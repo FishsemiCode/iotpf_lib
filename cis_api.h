@@ -42,12 +42,10 @@
 #include "cis_def.h"
 #include "cis_list.h"
 
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
 
 struct st_cis_context;
 
@@ -55,9 +53,8 @@ typedef struct st_cis_version       cis_version_t;
 typedef struct st_cis_data          cis_data_t;
 typedef struct st_cis_observe_attr  cis_observe_attr_t;
 typedef struct st_cis_inst_bitmap   cis_inst_bitmap_t;
-typedef struct st_cis_res_count		cis_res_count_t;
+typedef struct st_cis_res_count     cis_res_count_t;
 typedef struct st_cis_callback      cis_callback_t;
-typedef struct st_cis_callback_ctcc  cis_callback_ctcc_t;
 
 typedef struct st_uri               cis_uri_t;
 typedef struct st_object            st_object_t;
@@ -73,7 +70,6 @@ typedef void (*cis_event_callback_t)(void *context, cis_evt_t id, void *param);
 
 typedef cis_coapret_t (*cis_write_raw_callback_t)(void *context, const uint8_t *data, uint32_t length);
 
-
 #define LIFETIME_INVALID      ((uint32_t)0xFFFFFFFF)
 #define MESSAGEID_INVALID     ((uint32_t)0x00)
 #define LIFETIME_LIMIT_MIN    ((uint32_t)0x0000000F)
@@ -83,8 +79,8 @@ typedef cis_coapret_t (*cis_write_raw_callback_t)(void *context, const uint8_t *
 #define INSTANCE_MAX_ID       ((uint16_t)0xFFFF - 1)
 #define RESOURCE_MAX_ID       ((uint16_t)0xFFFF - 1)
 
-
 #define PUMP_RET_CUSTOM       ((uint32_t)0xFFFFFFFF)
+#define PUMP_RET_DISCONN      ((uint32_t)0xFFFFFFFE)
 #define PUMP_RET_NOSLEEP      ((uint32_t)0x00)
 
 #define URI_INVALID           ((uint16_t)0xFFFF)
@@ -97,14 +93,11 @@ typedef cis_coapret_t (*cis_write_raw_callback_t)(void *context, const uint8_t *
 #define CIS_URI_IS_SET_INSTANCE(uri) (((uri)->flag & URI_FLAG_INSTANCE_ID) != 0)
 #define CIS_URI_IS_SET_RESOURCE(uri) (((uri)->flag & URI_FLAG_RESOURCE_ID) != 0)
 
-
 #define CIS_ATTR_FLAG_MIN_PERIOD      (uint8_t)0x01
 #define CIS_ATTR_FLAG_MAX_PERIOD      (uint8_t)0x02
 #define CIS_ATTR_FLAG_GREATER_THAN    (uint8_t)0x04
 #define CIS_ATTR_FLAG_LESS_THAN       (uint8_t)0x08
 #define CIS_ATTR_FLAG_STEP            (uint8_t)0x10
-
-
 
 struct st_uri
 {
@@ -128,12 +121,10 @@ struct st_object
   void *userData;
 };
 
-
 cis_ret_t cis_uri_make(cis_oid_t oid, cis_iid_t iid, cis_rid_t rid, cis_uri_t *uri);
 cis_ret_t cis_uri_update(cis_uri_t *uri);
 void cisapi_wakeup_pump(void);
 uint32_t cis_pump_initialize(void);
-
 
 typedef enum
 {
@@ -149,24 +140,13 @@ struct st_cis_callback
 {
   cis_read_callback_t onRead;
   cis_write_callback_t onWrite;
+  cis_write_raw_callback_t onWriteRaw;
   cis_exec_callback_t onExec;
   cis_observe_callback_t onObserve;
   cis_event_callback_t onEvent;
   cis_discover_callback_t onDiscover;
   cis_set_params_callback_t onSetParams;
 };
-
-struct st_cis_callback_ctcc
-{
-  cis_read_callback_t onRead;
-  cis_write_callback_t onWrite;
-  cis_exec_callback_t onExec;
-  cis_observe_callback_t onObserve;
-  cis_event_callback_t onEvent;
-  cis_write_raw_callback_t onWriteRaw;
-};
-
-
 
 struct st_cis_data
 {
@@ -218,8 +198,6 @@ struct st_cis_inst_bitmap
   const uint8_t *instanceBitmap;
 };
 
-
-
 struct st_cis_res_count
 {
   cis_attrcount_t attrCount;
@@ -250,7 +228,6 @@ typedef enum
   cis_iotpf_operator_cmcc,
 }cis_iotpf_operator_t;
 
-
 typedef struct
 {
   cis_iotpf_mode_t iotpf_mode;
@@ -272,8 +249,6 @@ cis_ret_t cis_init(void **context, void *configPtr, uint16_t configLen);
 cis_ret_t cis_deinit(void **context);
 
 cis_ret_t cis_register(void *context, cis_time_t lifetime, const cis_callback_t *cb);
-cis_ret_t cis_register_ctcc(void *context, cis_time_t lifetime, const cis_callback_ctcc_t *cb);
-
 cis_ret_t cis_unregister(void *context);
 
 cis_ret_t cis_addobject(void *context, cis_oid_t objectid, const cis_inst_bitmap_t *bitmap, const cis_res_count_t *rescount);
@@ -286,7 +261,18 @@ cis_ret_t cis_update_reg(void *context, cis_time_t lifetime, bool withObjects);
 
 cis_ret_t cis_response(void *context, const cis_uri_t *uri, const cis_data_t *value, cis_mid_t mid, cis_coapret_t result);
 cis_ret_t cis_notify(void *context, const cis_uri_t *uri, const cis_data_t *value, cis_mid_t mid, cis_coapret_t result, bool needAck);
+
 cis_ret_t cis_notify_raw(void *context, uint8_t *data, uint32_t length);
+
+#if CIS_ENABLE_UPDATE
+cis_ret_t cis_notify_503(uint8_t value);
+int get_updateresult(void);
+uint32_t cis_check_fota_update(void);
+void cis_setObserve(cis_oid_t objectId, cis_iid_t instanceId, cis_rid_t resourceId);
+uint32_t cis_write_updateinfo(char* update, char* version, uint16_t mid, char* token, uint8_t flag);
+uint32_t cis_read_updateinfo(char* update, char* version, char* mid, char* token, char* flag);
+#endif
+
 cis_ret_t cis_discover_response(void *context, cis_mid_t msgId, cis_res_result_t result, char *valueStr);
 
 void ciscom_destory(void);
@@ -295,14 +281,10 @@ int ciscom_initialize(cis_iotpf_configs *pIotpf_configs);
 int cis_get_iotpf_mode(void);
 int cis_get_iotpf_operator(void);
 
-
-
 int cisat_readloop(int fd);
 int cisat_initialize(void);
 
 int cisapi_initialize(void);
-
-
 
 void cis_data_encode_string(const char *string, cis_data_t *dataP);
 void cis_data_encode_opaque(uint8_t *buffer, size_t length, cis_data_t *dataP);
@@ -313,7 +295,6 @@ void cis_data_encode_float(double value, cis_data_t *dataP);
 int cis_data_decode_float(const cis_data_t *dataP, double *valueP);
 void cis_data_encode_bool(bool value, cis_data_t *dataP);
 int cis_data_decode_bool(const cis_data_t *dataP, bool *valueP);
-
 
 #if CIS_ENABLE_UPDATE_MCU
 cis_ret_t cis_set_sota_info(char *version, uint16_t size);
@@ -363,18 +344,16 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_EVENT_FIRMWARE_ERASE_FAIL            CIS_EVENT_BASE + 49
 #define     CIS_EVENT_FIRMWARE_TRIGGER               CIS_EVENT_BASE + 50
 
-#define     CIS_EVENT_SOTA_DOWNLOADING				 CIS_EVENT_BASE + 51
-#define     CIS_EVENT_SOTA_DOWNLOAED				 CIS_EVENT_BASE + 52
-#define     CIS_EVENT_SOTA_FLASHERASE				 CIS_EVENT_BASE + 53
-#define     CIS_EVENT_SOTA_UPDATING					 CIS_EVENT_BASE + 54
+#define     CIS_EVENT_SOTA_DOWNLOADING               CIS_EVENT_BASE + 51
+#define     CIS_EVENT_SOTA_DOWNLOAED                 CIS_EVENT_BASE + 52
+#define     CIS_EVENT_SOTA_FLASHERASE                CIS_EVENT_BASE + 53
+#define     CIS_EVENT_SOTA_UPDATING                  CIS_EVENT_BASE + 54
 
 
-#define     CIS_EVENT_CMIOT_OTA_START         		 CIS_EVENT_BASE + 60
-#define     CIS_EVENT_CMIOT_OTA_SUCCESS            	 CIS_EVENT_BASE + 61
-#define     CIS_EVENT_CMIOT_OTA_FAIL            	 CIS_EVENT_BASE + 62
-#define     CIS_EVENT_CMIOT_OTA_FINISH            	 CIS_EVENT_BASE + 63
-
-
+#define     CIS_EVENT_CMIOT_OTA_START                CIS_EVENT_BASE + 60
+#define     CIS_EVENT_CMIOT_OTA_SUCCESS              CIS_EVENT_BASE + 61
+#define     CIS_EVENT_CMIOT_OTA_FAIL                 CIS_EVENT_BASE + 62
+#define     CIS_EVENT_CMIOT_OTA_FINISH               CIS_EVENT_BASE + 63
 
 /*
  * Error code
@@ -395,8 +374,6 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_RET_PENDING                      CIS_RET_BASE - 10
 #define     CIS_RET_UNSUPPORTIVE                 CIS_RET_BASE - 11
 
-
-
 /*
  *COAP result code
  *@cis_cbret_t
@@ -412,7 +389,6 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_COAP_406_NOT_ACCEPTABLE         (uint8_t)0x86
 #define     CIS_COAP_503_SERVICE_UNAVAILABLE    (uint8_t)0xA3
 
-
 #define     CIS_CALLBACK_CONFORM               CIS_COAP_206_CONFORM
 #define     CIS_CALLBACK_BAD_REQUEST           CIS_COAP_400_BAD_REQUEST
 #define     CIS_CALLBACK_UNAUTHORIZED          CIS_COAP_401_UNAUTHORIZED
@@ -420,7 +396,6 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_CALLBACK_METHOD_NOT_ALLOWED    CIS_COAP_405_METHOD_NOT_ALLOWED
 #define     CIS_CALLBACK_NOT_ACCEPTABLE        CIS_COAP_406_NOT_ACCEPTABLE
 #define     CIS_CALLBACK_SERVICE_UNAVAILABLE   CIS_COAP_503_SERVICE_UNAVAILABLE
-
 
 #define     CIS_RESPONSE_READ                    CIS_COAP_205_CONTENT
 #define     CIS_RESPONSE_WRITE                   CIS_COAP_204_CHANGED
@@ -439,22 +414,19 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_NOTIFY_CONTENT                   CIS_COAP_205_CONTENT
 #define     CIS_NOTIFY_CONTINUE                  CIS_COAP_231_CONTINUE
 
-
-
 #if CIS_ENABLE_DM
 
 typedef struct
 {
-  char szCMEI_IMEI[64]; 	//CMEI/IMEI
-  char szIMSI[64];		//IMSI
-  char szDMv[16]; 		//DM???
-  char szAppKey[64]; 		//appkey
-  char szPwd[64];			//pwd??
-  int nAddressFamily; 	//4?6  ipv4,ipv6
-  char szCMEI_IMEI2[64];	//CMEI/IMEI
+  char szCMEI_IMEI[64];       //CMEI/IMEI
+  char szIMSI[64];            //IMSI
+  char szDMv[16];             //DM???
+  char szAppKey[64];          //appkey
+  char szPwd[64];             //pwd??
+  int nAddressFamily;         //4?6  ipv4,ipv6
+  char szCMEI_IMEI2[64];      //CMEI/IMEI
 } Options;
 #endif
-
 
 #ifdef __cplusplus
 };

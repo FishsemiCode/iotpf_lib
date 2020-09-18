@@ -8,7 +8,9 @@ config SERVICES_IOTPF_LIB
 	---help---
 		Enable the IOTPF library
 
-if SERVICES_IOTPF_LIB
-
-endif # SERVICES_IOTPF_LIB
+config SERVICES_IOTPF_LIB_MODE
+	string "cmcc or ctcc"
+	default "ctcc"
+	---help---
+		The platform nb device connected to
 
