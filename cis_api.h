@@ -41,6 +41,7 @@
 #include <time.h>
 #include "cis_def.h"
 #include "cis_list.h"
+#include "cis_if_sys.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -267,12 +268,14 @@ cis_ret_t cis_notify_raw(void *context, uint8_t *data, uint32_t length);
 #if CIS_ENABLE_UPDATE
 cis_ret_t cis_notify_503(uint8_t value);
 int get_updateresult(void);
-uint32_t cis_check_fota_update(void);
+void cis_check_fota_update(void);
 void cis_setObserve(cis_oid_t objectId, cis_iid_t instanceId, cis_rid_t resourceId);
-uint32_t cis_write_updateinfo(char* update, char* version, uint16_t mid, char* token, uint8_t flag);
-uint32_t cis_read_updateinfo(char* update, char* version, char* mid, char* token, char* flag);
+void cis_write_updateinfo(char* update, char* version, uint16_t mid, char* token, uint8_t flag);
+void cis_read_updateinfo(char* update, char* version, char* mid, char* token, char* flag);
+int ota_get_version(char *buf);
 #endif
 
+cis_ret_t prv_onSySEventHandler(cissys_event_t id, void *param, void *userData, int *len);
 cis_ret_t cis_discover_response(void *context, cis_mid_t msgId, cis_res_result_t result, char *valueStr);
 
 void ciscom_destory(void);
