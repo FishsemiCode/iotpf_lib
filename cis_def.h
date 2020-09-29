@@ -152,11 +152,11 @@ typedef int32_t      cis_time_t;  //normally in second unit
 
 
 
-#ifndef		CIS_ENABLE_CMIOT_OTA
-#define		CIS_ENABLE_CMIOT_OTA              0
+#ifndef     CIS_ENABLE_CMIOT_OTA
+#define     CIS_ENABLE_CMIOT_OTA              0
 #else
-#undef		CIS_ENABLE_CMIOT_OTA
-#define		CIS_ENABLE_CMIOT_OTA              1
+#undef      CIS_ENABLE_CMIOT_OTA
+#define     CIS_ENABLE_CMIOT_OTA              1
 #endif
 
 #ifndef     CIS_ENABLE_AUTH
@@ -240,15 +240,15 @@ typedef int32_t      cis_time_t;  //normally in second unit
 
 #if CIS_ENABLE_UPDATE_MCU
 
-#define  sota_event_unknow    0
-#define	 sota_erase_success   1       //for erase, handle /5/0/26501
-#define  sota_erase_fail      2
-#define	 sota_write_success   3            //for write
-#define	 sota_write_fail      4
-#define	 sota_validate_success 5       //for validate
-#define	 sota_validate_fail    6
-#define	 sota_update_success   7   //for update
-#define	 sota_update_fail      8
+#define sota_event_unknow      0
+#define sota_erase_success     1   //for erase, handle /5/0/26501
+#define sota_erase_fail        2
+#define sota_write_success     3   //for write
+#define sota_write_fail        4
+#define sota_validate_success  5   //for validate
+#define sota_validate_fail     6
+#define sota_update_success    7   //for update
+#define sota_update_fail       8
 
 #endif
 

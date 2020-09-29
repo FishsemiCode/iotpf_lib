@@ -39,6 +39,7 @@
 #ifndef _CIS_API_H_
 #define _CIS_API_H_
 #include <time.h>
+#include <pthread.h>
 #include "cis_def.h"
 #include "cis_list.h"
 #include "cis_if_sys.h"
@@ -266,13 +267,17 @@ cis_ret_t cis_notify(void *context, const cis_uri_t *uri, const cis_data_t *valu
 cis_ret_t cis_notify_raw(void *context, uint8_t *data, uint32_t length);
 
 #if CIS_ENABLE_UPDATE
+pthread_mutex_t* get_nb_gps_mutex(void);
+void cis_set_fota_update_state(bool work);
+bool cis_get_fota_update_state(void);
 cis_ret_t cis_notify_503(uint8_t value);
 int get_updateresult(void);
 void cis_check_fota_update(void);
 void cis_setObserve(cis_oid_t objectId, cis_iid_t instanceId, cis_rid_t resourceId);
-void cis_write_updateinfo(char* update, char* version, uint16_t mid, char* token, uint8_t flag);
-void cis_read_updateinfo(char* update, char* version, char* mid, char* token, char* flag);
+void cis_write_updateinfo(char* update, char* version, uint16_t mid, char* token, uint8_t flag, int installfailcount);
+void cis_read_updateinfo(char* update, char* version, char* mid, char* token, char* flag, char* installfailcount);
 int ota_get_version(char *buf);
+void start_nb_gps_thread(void);
 #endif
 
 cis_ret_t prv_onSySEventHandler(cissys_event_t id, void *param, void *userData, int *len);
@@ -326,23 +331,22 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_EVENT_UPDATE_FAILED             CIS_EVENT_BASE + 12
 #define     CIS_EVENT_UPDATE_TIMEOUT            CIS_EVENT_BASE + 13
 #define     CIS_EVENT_UPDATE_NEED               CIS_EVENT_BASE + 14
-
-
 #define     CIS_EVENT_UNREG_DONE                CIS_EVENT_BASE + 15
 
 #define     CIS_EVENT_RESPONSE_FAILED           CIS_EVENT_BASE + 20
 #define     CIS_EVENT_RESPONSE_SUCCESS          CIS_EVENT_BASE + 21
 #define     CIS_EVENT_NOTIFY_FAILED             CIS_EVENT_BASE + 25
 #define     CIS_EVENT_NOTIFY_SUCCESS            CIS_EVENT_BASE + 26
+#define     CIS_EVENT_START_NB_GPS_THREAD       CIS_EVENT_BASE + 27
 
-#define     CIS_EVENT_FIRMWARE_DOWNLOADING           CIS_EVENT_BASE + 40 //enter to downloading
-#define     CIS_EVENT_FIRMWARE_DOWNLOAD_FAILED       CIS_EVENT_BASE + 41 //enter downloading error
+#define     CIS_EVENT_FIRMWARE_DOWNLOADING           CIS_EVENT_BASE + 40  //enter to downloading
+#define     CIS_EVENT_FIRMWARE_DOWNLOAD_FAILED       CIS_EVENT_BASE + 41  //enter downloading error
 #define     CIS_EVENT_FIRMWARE_DOWNLOADED            CIS_EVENT_BASE + 42  //download finish
 #define     CIS_EVENT_FIRMWARE_UPDATING              CIS_EVENT_BASE + 43  //updating
 #define     CIS_EVENT_FIRMWARE_UPDATE_SUCCESS        CIS_EVENT_BASE + 44  //update success
-#define     CIS_EVENT_FIRMWARE_UPDATE_FAILED         CIS_EVENT_BASE + 45   //update fail
-#define     CIS_EVENT_FIRMWARE_UPDATE_OVER           CIS_EVENT_BASE + 46   //update finish
-#define     CIS_EVENT_FIRMWARE_DOWNLOAD_DISCONNECT   CIS_EVENT_BASE + 47    //update error
+#define     CIS_EVENT_FIRMWARE_UPDATE_FAILED         CIS_EVENT_BASE + 45  //update fail
+#define     CIS_EVENT_FIRMWARE_UPDATE_OVER           CIS_EVENT_BASE + 46  //update finish
+#define     CIS_EVENT_FIRMWARE_DOWNLOAD_DISCONNECT   CIS_EVENT_BASE + 47  //update error
 #define     CIS_EVENT_FIRMWARE_ERASE_SUCCESS         CIS_EVENT_BASE + 48
 #define     CIS_EVENT_FIRMWARE_ERASE_FAIL            CIS_EVENT_BASE + 49
 #define     CIS_EVENT_FIRMWARE_TRIGGER               CIS_EVENT_BASE + 50
@@ -351,7 +355,6 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_EVENT_SOTA_DOWNLOAED                 CIS_EVENT_BASE + 52
 #define     CIS_EVENT_SOTA_FLASHERASE                CIS_EVENT_BASE + 53
 #define     CIS_EVENT_SOTA_UPDATING                  CIS_EVENT_BASE + 54
-
 
 #define     CIS_EVENT_CMIOT_OTA_START                CIS_EVENT_BASE + 60
 #define     CIS_EVENT_CMIOT_OTA_SUCCESS              CIS_EVENT_BASE + 61
@@ -381,24 +384,24 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
  *COAP result code
  *@cis_cbret_t
  */
-#define     CIS_COAP_204_CHANGED                (uint8_t)0x44
-#define     CIS_COAP_205_CONTENT                (uint8_t)0x45
-#define     CIS_COAP_206_CONFORM                (uint8_t)0x46
-#define     CIS_COAP_231_CONTINUE               (uint8_t)0x5F
-#define     CIS_COAP_400_BAD_REQUEST            (uint8_t)0x80
-#define     CIS_COAP_401_UNAUTHORIZED           (uint8_t)0x81
-#define     CIS_COAP_404_NOT_FOUND              (uint8_t)0x84
-#define     CIS_COAP_405_METHOD_NOT_ALLOWED     (uint8_t)0x85
-#define     CIS_COAP_406_NOT_ACCEPTABLE         (uint8_t)0x86
-#define     CIS_COAP_503_SERVICE_UNAVAILABLE    (uint8_t)0xA3
+#define     CIS_COAP_204_CHANGED                 (uint8_t)0x44
+#define     CIS_COAP_205_CONTENT                 (uint8_t)0x45
+#define     CIS_COAP_206_CONFORM                 (uint8_t)0x46
+#define     CIS_COAP_231_CONTINUE                (uint8_t)0x5F
+#define     CIS_COAP_400_BAD_REQUEST             (uint8_t)0x80
+#define     CIS_COAP_401_UNAUTHORIZED            (uint8_t)0x81
+#define     CIS_COAP_404_NOT_FOUND               (uint8_t)0x84
+#define     CIS_COAP_405_METHOD_NOT_ALLOWED      (uint8_t)0x85
+#define     CIS_COAP_406_NOT_ACCEPTABLE          (uint8_t)0x86
+#define     CIS_COAP_503_SERVICE_UNAVAILABLE     (uint8_t)0xA3
 
-#define     CIS_CALLBACK_CONFORM               CIS_COAP_206_CONFORM
-#define     CIS_CALLBACK_BAD_REQUEST           CIS_COAP_400_BAD_REQUEST
-#define     CIS_CALLBACK_UNAUTHORIZED          CIS_COAP_401_UNAUTHORIZED
-#define     CIS_CALLBACK_NOT_FOUND             CIS_COAP_404_NOT_FOUND
-#define     CIS_CALLBACK_METHOD_NOT_ALLOWED    CIS_COAP_405_METHOD_NOT_ALLOWED
-#define     CIS_CALLBACK_NOT_ACCEPTABLE        CIS_COAP_406_NOT_ACCEPTABLE
-#define     CIS_CALLBACK_SERVICE_UNAVAILABLE   CIS_COAP_503_SERVICE_UNAVAILABLE
+#define     CIS_CALLBACK_CONFORM                 CIS_COAP_206_CONFORM
+#define     CIS_CALLBACK_BAD_REQUEST             CIS_COAP_400_BAD_REQUEST
+#define     CIS_CALLBACK_UNAUTHORIZED            CIS_COAP_401_UNAUTHORIZED
+#define     CIS_CALLBACK_NOT_FOUND               CIS_COAP_404_NOT_FOUND
+#define     CIS_CALLBACK_METHOD_NOT_ALLOWED      CIS_COAP_405_METHOD_NOT_ALLOWED
+#define     CIS_CALLBACK_NOT_ACCEPTABLE          CIS_COAP_406_NOT_ACCEPTABLE
+#define     CIS_CALLBACK_SERVICE_UNAVAILABLE     CIS_COAP_503_SERVICE_UNAVAILABLE
 
 #define     CIS_RESPONSE_READ                    CIS_COAP_205_CONTENT
 #define     CIS_RESPONSE_WRITE                   CIS_COAP_204_CHANGED
