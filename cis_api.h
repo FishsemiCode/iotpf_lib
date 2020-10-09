@@ -42,7 +42,6 @@
 #include <pthread.h>
 #include "cis_def.h"
 #include "cis_list.h"
-#include "cis_if_sys.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -236,6 +235,20 @@ typedef struct
   cis_iotpf_operator_t iotpf_operator;
 } cis_iotpf_configs;
 
+typedef enum
+{
+  PUMP_STATE_HALT = -1,
+  PUMP_STATE_INITIAL,
+  PUMP_STATE_BOOTSTRAPPING,
+  PUMP_STATE_CONNECTING,
+  PUMP_STATE_REGISTER_REQUIRED,
+  PUMP_STATE_REGISTERING,
+
+  PUMP_STATE_READY,
+  PUMP_STATE_DISCONNECTED,
+  PUMP_STATE_UNREGISTER
+} et_client_state_t;
+
 cis_ret_t cis_version(cis_version_t *version);
 
 #if CIS_ENABLE_CMIOT_OTA
@@ -276,11 +289,15 @@ void cis_check_fota_update(void);
 void cis_setObserve(cis_oid_t objectId, cis_iid_t instanceId, cis_rid_t resourceId);
 void cis_write_updateinfo(char* update, char* version, uint16_t mid, char* token, uint8_t flag, int installfailcount);
 void cis_read_updateinfo(char* update, char* version, char* mid, char* token, char* flag, char* installfailcount);
-int ota_get_version(char *buf);
 void start_nb_gps_thread(void);
 #endif
 
-cis_ret_t prv_onSySEventHandler(cissys_event_t id, void *param, void *userData, int *len);
+void core_updatePumpState(void *context, et_client_state_t state);
+int ciscom_getATHandle(void);
+bool ciscom_isRegistered(int regStatus);
+int ciscom_getRegisteredStaus(void);
+int ciscom_setRadioPower(bool on);
+
 cis_ret_t cis_discover_response(void *context, cis_mid_t msgId, cis_res_result_t result, char *valueStr);
 
 void ciscom_destory(void);
