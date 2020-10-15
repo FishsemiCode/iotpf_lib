@@ -309,7 +309,7 @@ int cis_get_iotpf_operator(void);
 int cisat_readloop(int fd);
 int cisat_initialize(void);
 
-int cisapi_initialize(void);
+int cisapi_initialize(int iotpf_mode);
 
 void cis_data_encode_string(const char *string, cis_data_t *dataP);
 void cis_data_encode_opaque(uint8_t *buffer, size_t length, cis_data_t *dataP);
