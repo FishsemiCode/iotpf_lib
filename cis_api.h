@@ -285,6 +285,7 @@ void cis_set_fota_update_state(bool work);
 bool cis_get_fota_update_state(void);
 cis_ret_t cis_notify_503(uint8_t value);
 int get_updateresult(void);
+void set_updateresult(int res);
 void cis_check_fota_update(void);
 void cis_setObserve(cis_oid_t objectId, cis_iid_t instanceId, cis_rid_t resourceId);
 void cis_write_updateinfo(char* update, char* version, uint16_t mid, char* token, uint8_t flag, int installfailcount);
