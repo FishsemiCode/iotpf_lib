@@ -69,7 +69,7 @@ typedef cis_coapret_t (*cis_discover_callback_t)(void *context, cis_uri_t *uri, 
 typedef cis_coapret_t (*cis_set_params_callback_t)(void *context, cis_uri_t *uri, cis_observe_attr_t parameters, cis_mid_t mid);
 typedef void (*cis_event_callback_t)(void *context, cis_evt_t id, void *param);
 
-typedef cis_coapret_t (*cis_write_raw_callback_t)(void *context, const uint8_t *data, uint32_t length);
+typedef cis_coapret_t (*cis_write_raw_callback_t)(void *context, const uint8_t *data, uint32_t length, cis_mid_t mid);
 
 #define LIFETIME_INVALID      ((uint32_t)0xFFFFFFFF)
 #define MESSAGEID_INVALID     ((uint32_t)0x00)
@@ -303,6 +303,7 @@ cis_ret_t cis_discover_response(void *context, cis_mid_t msgId, cis_res_result_t
 
 void ciscom_destory(void);
 int ciscom_initialize(cis_iotpf_configs *pIotpf_configs);
+int ciscom_gps_initialize(void);
 
 int cis_get_iotpf_mode(void);
 int cis_get_iotpf_operator(void);
@@ -378,6 +379,7 @@ cis_ret_t cis_notify_sota_result(void *context, uint8_t eventid);
 #define     CIS_EVENT_CMIOT_OTA_SUCCESS              CIS_EVENT_BASE + 61
 #define     CIS_EVENT_CMIOT_OTA_FAIL                 CIS_EVENT_BASE + 62
 #define     CIS_EVENT_CMIOT_OTA_FINISH               CIS_EVENT_BASE + 63
+#define     CIS_EVENT_UPDATE_DISCONNECT              CIS_EVENT_BASE + 64
 
 /*
  * Error code
