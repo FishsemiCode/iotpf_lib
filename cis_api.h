@@ -227,6 +227,8 @@ typedef enum
 {
   cis_iotpf_operator_ctcc,
   cis_iotpf_operator_cmcc,
+  cis_iotpf_operator_cucc,
+  cis_iotpf_operator_other,
 }cis_iotpf_operator_t;
 
 typedef struct
