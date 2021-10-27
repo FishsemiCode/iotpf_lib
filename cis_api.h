@@ -125,6 +125,7 @@ struct st_object
 cis_ret_t cis_uri_make(cis_oid_t oid, cis_iid_t iid, cis_rid_t rid, cis_uri_t *uri);
 cis_ret_t cis_uri_update(cis_uri_t *uri);
 void cisapi_wakeup_pump(void);
+void cisapi_quit_pump(void);
 uint32_t cis_pump_initialize(void);
 
 typedef enum
@@ -263,6 +264,7 @@ char *cis_get_version(char *ver);
 #endif
 
 cis_ret_t cis_init(void **context, void *configPtr, uint16_t configLen);
+cis_ret_t cis_init_with_vendor(void **context, void *configPtr, uint16_t configLen, uint8_t vendor);
 cis_ret_t cis_deinit(void **context);
 
 cis_ret_t cis_register(void *context, cis_time_t lifetime, const cis_callback_t *cb);
